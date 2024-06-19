@@ -616,7 +616,6 @@ class Irreps(tuple):
         o2_ir_strs = []
         for o3_ir in o3_irreps:
             mul, l, p = o3_ir.mul, o3_ir.ir.l, o3_ir.ir.p
-            o2_ir_strs = []
             if (l % 2 == 0 and p == 1) or (l % 2 == 1 and p == -1):
                 # Same parity as SH
                 scalar = '0e'
