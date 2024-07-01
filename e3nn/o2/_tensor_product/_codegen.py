@@ -110,8 +110,9 @@ def codegen_tensor_product_left_right(
         mul_ir_in1 = irreps_in1[ins.i_in1]
         mul_ir_in2 = irreps_in2[ins.i_in2]
         mul_ir_out = irreps_out[ins.i_out]
-        
-        p_mul =  mul_ir_in1.ir.p * mul_ir_in2.ir.p * mul_ir_out.ir.p
+
+        # Selection Rules
+        p_mul = mul_ir_in1.ir.p * mul_ir_in2.ir.p * mul_ir_out.ir.p
         assert p_mul == 0 or p_mul == 1
         m1, m2, m3 = mul_ir_in1.ir.m, mul_ir_in2.ir.m, mul_ir_out.ir.m
         assert m1 + m2 == m3 or abs(m1 - m2) == m3
@@ -144,11 +145,13 @@ def codegen_tensor_product_left_right(
 
         # Create a proxy & request for the relevant wigner d3m
         # If not used (because of specialized code), will get removed later.
-        d3m_name = f"_d3m_{mul_ir_in1.ir.m}_{mul_ir_in2.ir.m}_{mul_ir_out.ir.m}"+ f"_{mul_ir_in1.ir.p}_{mul_ir_in2.ir.p}_{mul_ir_out.ir.p}"
+        d3m_name = (
+            f"_d3m_{mul_ir_in1.ir.m}_{mul_ir_in2.ir.m}_{mul_ir_out.ir.m}"
+            + f"_{mul_ir_in1.ir.p}_{mul_ir_in2.ir.p}_{mul_ir_out.ir.p}"
+        )
         d3m = fx.Proxy(graph.get_attr(d3m_name), tracer=tracer)
 
-        m1m2m3p1p2p3 = (mul_ir_in1.ir.m, mul_ir_in2.ir.m, mul_ir_out.ir.m,
-                        mul_ir_in1.ir.p, mul_ir_in2.ir.p, mul_ir_out.ir.p)
+        m1m2m3p1p2p3 = (mul_ir_in1.ir.m, mul_ir_in2.ir.m, mul_ir_out.ir.m, mul_ir_in1.ir.p, mul_ir_in2.ir.p, mul_ir_out.ir.p)
 
         if ins.connection_mode == "uvw":
             assert ins.has_weight
@@ -227,8 +230,7 @@ def codegen_tensor_product_left_right(
         else:
             if d3m_name not in constants:
                 constants[d3m_name] = o2.decomp_3m(
-                    mul_ir_in1.ir.m, mul_ir_in2.ir.m, mul_ir_out.ir.m,
-                    mul_ir_in1.ir.p, mul_ir_in2.ir.p, mul_ir_out.ir.p
+                    mul_ir_in1.ir.m, mul_ir_in2.ir.m, mul_ir_out.ir.m, mul_ir_in1.ir.p, mul_ir_in2.ir.p, mul_ir_out.ir.p
                 )
 
     # = Return the result =
@@ -487,8 +489,7 @@ def codegen_tensor_product_right(
         else:
             if d3m_name not in constants:
                 constants[d3m_name] = o2.decomp_3m(
-                    mul_ir_in1.ir.m, mul_ir_in2.ir.m, mul_ir_out.ir.m,
-                    mul_ir_in1.ir.p, mul_ir_in2.ir.p, mul_ir_out.ir.p
+                    mul_ir_in1.ir.m, mul_ir_in2.ir.m, mul_ir_out.ir.m, mul_ir_in1.ir.p, mul_ir_in2.ir.p, mul_ir_out.ir.p
                 )
 
     # = Return the result =

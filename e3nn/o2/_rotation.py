@@ -98,7 +98,9 @@ def inverse_angles(a):
     """
     return -a
 
+
 # conversions
+
 
 def matrix(angle: torch.Tensor, m=None) -> torch.Tensor:
     r"""matrix of 2D rotation
@@ -119,9 +121,7 @@ def matrix(angle: torch.Tensor, m=None) -> torch.Tensor:
         return torch.ones_like(angle).reshape(-1, 1, 1)
     c = torch.cos(m * angle)
     s = torch.sin(m * angle)
-    return torch.stack(
-        [torch.stack([c, -s], dim=-1), torch.stack([s, c], dim=-1)], dim=-2
-    )
+    return torch.stack([torch.stack([c, -s], dim=-1), torch.stack([s, c], dim=-1)], dim=-2)
 
 
 def reflection(angle: torch.Tensor, m=None, p=None):
@@ -131,7 +131,7 @@ def reflection(angle: torch.Tensor, m=None, p=None):
     ----------
     alpha : `torch.Tensor`
         tensor of shape :math:`(...)`
-    
+
     Returns
     -------
     `torch.Tensor`
@@ -145,11 +145,11 @@ def reflection(angle: torch.Tensor, m=None, p=None):
             return -torch.ones_like(angle).reshape(-1, 1, 1)
         else:
             return torch.ones_like(angle).reshape(-1, 1, 1)
-    x_reflection = angle.new_tensor([[1., 0.], [0., -1.]])
+    x_reflection = angle.new_tensor([[1.0, 0.0], [0.0, -1.0]])
     rot = matrix(angle, m)
     inv_rot = matrix(-angle, m)
     return rot @ x_reflection @ inv_rot
-    
+
 
 def matrix_to_angle(R, atol=1e-6):
     r"""conversion from matrix to angles
@@ -258,10 +258,8 @@ def D(m, p, angle: torch.Tensor, k) -> torch.Tensor:
     if m == 0 and p == 1:
         return torch.ones_like(angle).reshape(-1, 1, 1)
     elif m == 0 and p == -1:
-        return torch.where(
-            k.bool(), -1 * torch.ones_like(angle), torch.ones_like(angle)
-        ).reshape(-1, 1, 1)
-    
-    rot = matrix(angle, m) 
+        return torch.where(k.bool(), -1 * torch.ones_like(angle), torch.ones_like(angle)).reshape(-1, 1, 1)
+
+    rot = matrix(angle, m)
     refl = reflection(angle, m, p)
     return torch.where(k.bool().reshape(-1, 1, 1), refl, rot)

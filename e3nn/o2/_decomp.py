@@ -8,7 +8,6 @@ import torch
 from e3nn.util import explicit_default_types
 
 
-
 def decomp_3m(m1: int, m2: int, m3: int, p1=0, p2=0, p3=0, dtype=None, device=None) -> torch.Tensor:
     r"""Decompose :math:`m_2 \otimes m_3` rep to to :math:`m_1`
 
@@ -22,7 +21,7 @@ def decomp_3m(m1: int, m2: int, m3: int, p1=0, p2=0, p3=0, dtype=None, device=No
 
     m3 : int
         :math:`m_3`
-    
+
     p1 : int
         :math:`p_1`
 
@@ -41,7 +40,7 @@ def decomp_3m(m1: int, m2: int, m3: int, p1=0, p2=0, p3=0, dtype=None, device=No
     Returns
     -------
     `torch.Tensor`
-        tensor :math:`C` of shape 
+        tensor :math:`C` of shape
         :math:`(2 (m1>0) or 1 (m1=0), 2 (m2 > 0) or 1 (m2=0), 2 (m3 > 0) or 1 (m3=0))`
     """
     assert m1 == abs(m2 - m3) or m1 == m2 + m3
@@ -65,8 +64,8 @@ def _o2_clebsch_gordan(m1: int, m2: int, m3: int, p1=0, p2=0, p3=0) -> torch.Ten
     d3 = 2 if m3 != 0 else 1
     if m1 == 0 and m2 == 0 and m3 == 0:
         return torch.ones([1, 1, 1], dtype=torch.float64)
-    r2_2 = math.sqrt(2) / 2.
-    h = 1 / 2.
+    r2_2 = math.sqrt(2) / 2.0
+    h = 1 / 2.0
     if min([m1, m2, m3]) == 0:
         p_zero = [p1, p2, p3][[m1, m2, m3].index(0)]
         if p_zero == -1:
@@ -74,16 +73,10 @@ def _o2_clebsch_gordan(m1: int, m2: int, m3: int, p1=0, p2=0, p3=0) -> torch.Ten
         else:
             return torch.tensor([r2_2, 0, 0, r2_2], dtype=torch.float64).reshape(d1, d2, d3)
     if m1 == m2 + m3:
-        return torch.tensor(
-                [h, 0, 0, -h, 0, h, h, 0], dtype=torch.float64
-        ).reshape(d1, d2, d3)
+        return torch.tensor([h, 0, 0, -h, 0, h, h, 0], dtype=torch.float64).reshape(d1, d2, d3)
 
     if m1 + m2 == m3:
-        return torch.tensor(
-                [h, 0, 0, h, 0, h, -h, 0], dtype=torch.float64
-        ).reshape(d1, d2, d3)
+        return torch.tensor([h, 0, 0, h, 0, h, -h, 0], dtype=torch.float64).reshape(d1, d2, d3)
 
     if m1 + m3 == m2:
-        return torch.tensor(
-                [h, 0, 0, h, 0, -h, h, 0], dtype=torch.float64
-        ).reshape(d1, d2, d3)
+        return torch.tensor([h, 0, 0, h, 0, -h, h, 0], dtype=torch.float64).reshape(d1, d2, d3)

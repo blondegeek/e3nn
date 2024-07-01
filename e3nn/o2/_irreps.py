@@ -9,13 +9,14 @@ from e3nn.math import direct_sum, perm
 # These imports avoid cyclic reference from o2 itself
 from . import _rotation
 
+
 class Irrep(tuple):
     r"""Irreducible representation of :math:`O(2)`
 
     This class does not contain any data, it is a structure that describe the representation.
     It is typically used as argument of other classes of the library to define the input and output representations of
     functions. The irreps of :math:`O(2)` are two-dimensional for all integer angular frequency :math:`m`,
-    except for :math:`m=0` of which there are two one-dimensional irreps, the scalar (`0e`) and 
+    except for :math:`m=0` of which there are two one-dimensional irreps, the scalar (`0e`) and
     pseudoscalar (`0o`) which changes signs under 2D reflections.
 
     Parameters
@@ -80,7 +81,7 @@ class Irrep(tuple):
             elif isinstance(m, tuple):
                 m, p = m
                 if m != 0 and p != 0:
-                    raise ValueError(f'm > 0 does not have specific parity and must be None or 0')
+                    raise ValueError(f"m > 0 does not have specific parity and must be None or 0")
         if not isinstance(m, int) or m < 0:
             raise ValueError(f"l must be positive integer, got {l}")
         if p not in (-1, 1, 0):
@@ -274,6 +275,7 @@ class _MulIr(tuple):
     def index(self, _value):
         raise NotImplementedError
 
+
 # I'm pretty sure I didn't change anything here... may want to just reuse o3.Irreps
 class Irreps(tuple):
     r"""Direct sum of irreducible representations of :math:`O(2)`
@@ -369,6 +371,28 @@ class Irreps(tuple):
 
                 out.append(_MulIr(mul, ir))
         return super().__new__(cls, out)
+
+    @staticmethod
+    def circular_harmonics(lmax: int) -> "Irreps":
+        r"""representation of the spherical harmonics
+
+        Parameters
+        ----------
+        lmax : int
+            maximum :math:`l`
+
+        Returns
+        -------
+        `e3nn.o2.Irreps`
+            representation of :math:`(C^0, C^1, \dots, C^{\mathrm{lmax}})`
+
+        Examples
+        --------
+
+        >>> Irreps.circular_harmonics(3)
+        1x0e+1x1+1x2+1x3
+        """
+        return Irreps([(1, (l, 0)) for l in range(lmax + 1)])
 
     def slices(self):
         r"""List of slices corresponding to indices for each irrep.
@@ -552,6 +576,19 @@ class Irreps(tuple):
         irreps = Irreps([(mul, ir) for ir, _, mul in out])
         return Ret(irreps, p, inv)
 
+    def regroup(self) -> "Irreps":
+        r"""Regroup the same irreps together.
+        Equivalent to :meth:`sort` followed by :meth:`simplify`.
+        Returns
+        -------
+            irreps: `e3nn.o3.Irreps`
+        Examples
+        --------
+        >>> Irreps("0e + 1 + 2").regroup()
+        1x0e+1x1+1x2
+        """
+        return self.sort().irreps.simplify()
+
     @property
     def dim(self) -> int:
         return sum(mul * ir.dim for mul, ir in self)
@@ -608,7 +645,7 @@ class Irreps(tuple):
         R = d[..., None, None] * R
         k = (1 - d) / 2
         return self.D_from_angle(*_rotation.matrix_to_angle(R), k)
-    
+
     @classmethod
     def o3_to_o2_mapping(cls, o3_irreps):
         o2_list = []
@@ -618,15 +655,15 @@ class Irreps(tuple):
             mul, l, p = o3_ir.mul, o3_ir.ir.l, o3_ir.ir.p
             if (l % 2 == 0 and p == 1) or (l % 2 == 1 and p == -1):
                 # Same parity as SH
-                scalar = '0e'
+                scalar = "0e"
                 odd = torch.eye(2)
                 even = torch.tensor([[0, 1], [-1, 0]])
             elif (l % 2 == 0 and p == -1) or (l % 2 == 1 and p == 1):
-                scalar = '0o'
+                scalar = "0o"
                 odd = torch.tensor([[0, 1], [-1, 0]])
                 even = torch.eye(2)
             else:
-                raise ValueError('Something is wrong')
-            o2_ir_strs += list([scalar] + list(map(str, range(1, l+1)))) * mul
-            blocks += list([torch.ones(1, 1)] + [odd if m % 2 == 1 else even for m in range(1, l+1)]) * mul
+                raise ValueError("Something is wrong")
+            o2_ir_strs += list([scalar] + list(map(str, range(1, l + 1)))) * mul
+            blocks += list([torch.ones(1, 1)] + [odd if m % 2 == 1 else even for m in range(1, l + 1)]) * mul
         return Irreps("+".join(o2_ir_strs)), direct_sum(*blocks)
